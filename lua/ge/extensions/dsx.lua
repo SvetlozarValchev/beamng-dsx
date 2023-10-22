@@ -116,7 +116,7 @@ local function handleVehicleData()
   )
 end
 
-local function dsxAdvancedUpdate(throttle, brake, isABSActive, airSpeedKmh, beamDamage)
+local function dsxUpdate(throttle, brake, isABSActive, airSpeedKmh, beamDamage)
   state.throttle = throttle
   state.brake = brake
   state.isABSActive = isABSActive
@@ -126,5 +126,5 @@ local function dsxAdvancedUpdate(throttle, brake, isABSActive, airSpeedKmh, beam
   handleVehicleData()
 end
 
-M.dsxAdvancedUpdate = dsxAdvancedUpdate
+M.dsxUpdate = dsxUpdate
 return M

@@ -1,0 +1,2 @@
+load("dsx")
+registerCoreModule("dsx")

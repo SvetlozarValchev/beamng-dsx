@@ -1,0 +1,2 @@
+load("dsxAdvancedHaptic")
+registerCoreModule("dsxAdvancedHaptic")

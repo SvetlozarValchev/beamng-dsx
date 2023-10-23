@@ -82,7 +82,7 @@ end
 
 local function handleRightTrigger()
   local startOfResistanceThrottle = 1 * lerp(0.4, 1, state.throttle)
-  local startOfResistance = lerp(50, 175, startOfResistanceThrottle)
+  local startOfResistance = lerp(50, 150, startOfResistanceThrottle)
   local totalForceExcerted = 25
 
   return {

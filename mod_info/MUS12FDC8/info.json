@@ -1,0 +1,61 @@
+{
+    "attachments": [
+        {
+            "data_filename": "1072323.png",
+            "original_filename": "upload_2023-10-22_4-32-3.png",
+            "thumb_filename": "thumbs\/1072323.jpg"
+        },
+        {
+            "data_filename": "1072645.png",
+            "original_filename": "upload_2023-10-23_16-6-3.png",
+            "thumb_filename": "thumbs\/1072645.jpg"
+        },
+        {
+            "data_filename": "1072646.png",
+            "original_filename": "upload_2023-10-23_16-6-24.png",
+            "thumb_filename": "thumbs\/1072646.jpg"
+        }
+    ],
+    "resource_id": 28759,
+    "current_version_id": 50550,
+    "download_count": 0,
+    "resource_version_id": 50570,
+    "version_string": "v0.0.3",
+    "last_update": 1698053760,
+    "rating_avg": 4.5,
+    "rating_count": 0,
+    "rating_sum": 0,
+    "resource_category_id": 7,
+    "resource_date": 1698053760,
+    "review_count": 2,
+    "tag_line": "Adaptive triggers for PS5 controllers",
+    "update_count": 1,
+    "path": "MUS12FDC8\/50550\/",
+    "filename": "dsx.zip",
+    "title": "DSX - DualSense Adaptive Triggers",
+    "user_id": 5032,
+    "username": "CBeTHaX",
+    "tagid": "MUS12FDC8",
+    "message": "[ATTACH=full]1072323[\/ATTACH]\n\nThis mod adds adaptive triggers on the PS5 controller.\n\n[B][COLOR=#ff4d4d]It requires DSX: [URL]https:\/\/github.com\/Paliverse\/DualSenseX\/releases[\/URL][\/COLOR]\n(initially I was using the [URL='https:\/\/store.steampowered.com\/app\/1812620\/DSX\/']paid Steam version[\/URL], but for now the free version works just as well)\n[\/B]\nThis is an initial alpha version that just gets it to work. There's a more things planned for it, but I want to gather some feedback initially.\n\n[B][SIZE=5]Features:[\/SIZE][\/B]\n- Progressive brake\n- ABS feedback\n- Increased spring effect on the throttle\n\n[B][SIZE=5]Steps to make it run:[\/SIZE][\/B]\n1. Install DSX - the free (DSX v1) or paid Steam version (DSX v2)\n2. Start it\n3. Connect your PS5 controller (either through bluetooth or wire)\n4. Use 'Xbox 360 emulation' in DSX\n5. Start BeamNG\n6. Enjoy\n\n[B][SIZE=5]Troubleshooting:[\/SIZE][\/B]\n[I][SIZE=4][B]Q: Adaptive triggers not working[\/B][\/SIZE][\/I]\nA: First and foremost check if DSX is running. The mod can't work without it.\n\nCheck if the controller is connected in DSX\n\nDSX v1:\n[ATTACH=full]1072647[\/ATTACH]\n\nDSX v2:\n[ATTACH=full]1072678[\/ATTACH]\n\n1. If 'controller connected' is red, then the issue is with your PC or DSX not recognizing your controller. I can't really help you there as there are a few arbitrary reasons for that to happen, which I can't help you with, without having physical\/virtual access to your PC.\n\n2. Check if UDP light is green (status is only visible in DSX v2)\n[ATTACH=full]1072675[\/ATTACH]\n\n3. Check if UDP is enabled in settings and that the port is set to 6969\n\nDSX v1:\n[ATTACH=full]1072646[\/ATTACH]\n\nDSX v2:\n[ATTACH=full]1072676[\/ATTACH]\n\n4. Check if the mod is not crashing for some random reason (press '~' in-game to open the dev console and if you see a lot of red text, send me a screenshot\/log). BeamNG will usually detect that so you'll get a notification it's crashing and you'll know something's not right, without opening the console, but in any case, sending the actual error output will be extremely helpful in being able to figure out why it's not working.\n\n5. Enable port 6969 through your Firewall\/Antivirus (although generally unnecessary as there's no reason for your firewall\/antivirus to block local connections from your PC to your PC, but it's a last resort to this not working)\n\n6. If its neither of those, then I have no idea, I'll need to investigate your case in more detail.\n\n[I][B]Q: Game detecting controller twice (i.e. buttons get triggered twice)[\/B][\/I]\nA: That's more of a DSX problem than the mod's problem, but since I've also had to deal with it, there are a few ways to avoid this:\n\n1. Your Controller Emulation needs to be set to 'Xbox 360':\n\nDSX v1:\n[ATTACH=full]1072645[\/ATTACH]\n\nDSX v2:\n[ATTACH=full]1072677[\/ATTACH]\n\n2.1 (DSX v1) Use the controller only in Bluetooth mode (not wired)\n2.2 (DSX v2) If you wish to use it in wired mode, do not also turn it on in bluetooth mode.\n\n3. Reinstall the HidHide driver (only with DSX v2)\n\n4. Disable Steam from recognizing the Playstation controller (it will only get recognized through the Xbox360 emulator)\n\n[I][B]Q: \"I don't like how the adaptive triggers feel\"[\/B][\/I]\nA: I'm still working on getting it right, so please be patient\n\n\n[B][SIZE=5]Roadmap:[\/SIZE][\/B]\nHere's my plans for this mod so you know if your ideas and suggestions are already considered:\n\n- UI Widget for configuration and information\n- Information from the mod's side if it's having problems with UDP connection to DSX\n- Fine-tuning the adaptive triggers feel\n- Per-car customization of the adaptive triggers\n- Using the controller's LED for various effects like RPM limiter, Sirens, etc.\n- (future\/not possible at the moment) Haptic Feedback when a collision occurs (not possible in DSXv2, will see in the near future if v3 will support it through the UDP)",
+    "category_title": "",
+    "prefix_title": "Alpha",
+    "via": "packed by repo on Mon, 23 Oct 2023 18:01:21 GMT",
+    "hashes": [
+        [
+            "scripts\/dsx\/modScript.lua",
+            "5309d04c919e89be"
+        ],
+        [
+            "lua\/vehicle\/extensions\/auto\/dsxVehicleDispatcher.lua",
+            "58441393618838c7"
+        ],
+        [
+            "lua\/ge\/extensions\/dsxTriggerEnum.lua",
+            "d601a49a139da298"
+        ],
+        [
+            "lua\/ge\/extensions\/dsx.lua",
+            "8c82dec701a26c2b"
+        ]
+    ]
+}

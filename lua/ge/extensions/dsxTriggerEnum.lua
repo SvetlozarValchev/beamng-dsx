@@ -57,7 +57,19 @@ Triggers.InstructionType = {
     TriggerUpdate = 1,
     RGBUpdate = 2,
     PlayerLED = 3,
-    TriggerThreshold = 4
+    TriggerThreshold = 4,
+    MicLED = 5,
+    PlayerLEDNewRevision = 6,
+}
+
+-- LED Enum
+Triggers.PlayerLEDNewRevision = {
+    One = 0,
+    Two = 1,
+    Three = 2,
+    Four = 3,
+    Five = 4,
+    AllOff = 5
 }
 
 -- This is the representation of your enums in Lua tables

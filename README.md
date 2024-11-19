@@ -7,6 +7,9 @@ A mod that adds PS5 DualSense adaptive triggers support to BeamNG.drive.
 - Progressive brake feedback
 - ABS feedback
 - Increased spring effect on the throttle
+- Wheel slip feedback
+- RPM LED
+- Damage LED
 
 ## Prerequisites
 

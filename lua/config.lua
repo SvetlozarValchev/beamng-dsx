@@ -1,4 +1,5 @@
 return {
+    CONTROLLER_INDEX = 0,
     ENABLE_ABS = true, -- enable ABS vibration
     ENABLE_BRAKE_SLIP = true, -- enable brake slip vibration
     ENABLE_THROTTLE_SLIP = true, -- enable throttle slip vibration

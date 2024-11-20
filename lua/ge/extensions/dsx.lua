@@ -58,7 +58,7 @@ local function handleLeftTrigger()
     if absActive and CONFIG.ENABLE_ABS then
         return {
             type = Triggers.InstructionType.TriggerUpdate,
-            parameters = {0, Triggers.Trigger.Left, Triggers.TriggerMode.CustomTriggerValue,
+            parameters = {CONFIG.CONTROLLER_INDEX, Triggers.Trigger.Left, Triggers.TriggerMode.CustomTriggerValue,
                           Triggers.CustomTriggerValueMode.VibrateResistance, CONFIG.ABS_VIBRATION_FREQUENCY, 1, 0, 0, 0,
                           0, 0}
         }
@@ -68,7 +68,7 @@ local function handleLeftTrigger()
         if isWheelSlip == 1 and state.brake > 0.1 and CONFIG.ENABLE_BRAKE_SLIP then
             return {
                 type = Triggers.InstructionType.TriggerUpdate,
-                parameters = {0, Triggers.Trigger.Left, Triggers.TriggerMode.CustomTriggerValue,
+                parameters = {CONFIG.CONTROLLER_INDEX, Triggers.Trigger.Left, Triggers.TriggerMode.CustomTriggerValue,
                               Triggers.CustomTriggerValueMode.VibrateResistance, CONFIG.BRAKE_SLIP_VIBRATION_FREQUENCY,
                               1, 0, 0, 0, 0, 0}
             }
@@ -81,7 +81,7 @@ local function handleLeftTrigger()
 
             return {
                 type = Triggers.InstructionType.TriggerUpdate,
-                parameters = {0, Triggers.Trigger.Left, Triggers.TriggerMode.CustomTriggerValue,
+                parameters = {CONFIG.CONTROLLER_INDEX, Triggers.Trigger.Left, Triggers.TriggerMode.CustomTriggerValue,
                               Triggers.CustomTriggerValueMode.Rigid, startOfResistance, amountOfForceExcerted, 255, 0,
                               0, 0, 0}
             }
@@ -95,7 +95,7 @@ local function handleRightTrigger()
     if isWheelSlip == 1 and state.throttle > 0.1 and CONFIG.ENABLE_THROTTLE_SLIP then
         return {
             type = Triggers.InstructionType.TriggerUpdate,
-            parameters = {0, Triggers.Trigger.Right, Triggers.TriggerMode.CustomTriggerValue,
+            parameters = {CONFIG.CONTROLLER_INDEX, Triggers.Trigger.Right, Triggers.TriggerMode.CustomTriggerValue,
                           Triggers.CustomTriggerValueMode.VibratePulse, 255, 255, 3, 50, 0, 0, 0}
         }
     else
@@ -105,7 +105,7 @@ local function handleRightTrigger()
 
         return {
             type = Triggers.InstructionType.TriggerUpdate,
-            parameters = {0, Triggers.Trigger.Right, Triggers.TriggerMode.CustomTriggerValue,
+            parameters = {CONFIG.CONTROLLER_INDEX, Triggers.Trigger.Right, Triggers.TriggerMode.CustomTriggerValue,
                           Triggers.CustomTriggerValueMode.Rigid, startOfResistance, 0, 0, 0, 0, 0, 0}
         }
     end

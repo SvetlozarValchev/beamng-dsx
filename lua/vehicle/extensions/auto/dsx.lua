@@ -1,11 +1,74 @@
 local socket = require("socket")
-local Triggers = require("dsxTriggerEnum")
-local CONFIG = require("../../config")
+local CONFIG = require("../../../config")
 
-local M = {}
+local Triggers = {
+    TriggerMode = {
+        Normal = 0,
+        GameCube = 1,
+        VerySoft = 2,
+        Soft = 3,
+        Hard = 4,
+        VeryHard = 5,
+        Hardest = 6,
+        Rigid = 7,
+        VibrateTrigger = 8,
+        Choppy = 9,
+        Medium = 10,
+        VibrateTriggerPulse = 11,
+        CustomTriggerValue = 12,
+        Resistance = 13,
+        Bow = 14,
+        Galloping = 15,
+        SemiAutomaticGun = 16,
+        AutomaticGun = 17,
+        Machine = 18
+    },
+    CustomTriggerValueMode = {
+        OFF = 0,
+        Rigid = 1,
+        RigidA = 2,
+        RigidB = 3,
+        RigidAB = 4,
+        Pulse = 5,
+        PulseA = 6,
+        PulseB = 7,
+        PulseAB = 8,
+        VibrateResistance = 9,
+        VibrateResistanceA = 10,
+        VibrateResistanceB = 11,
+        VibrateResistanceAB = 12,
+        VibratePulse = 13,
+        VibratePulseA = 14,
+        VibratePulsB = 15,
+        VibratePulseAB = 16
+    },
+    Trigger = {
+        Invalid = 0,
+        Left = 1,
+        Right = 2
+    },
+    InstructionType = {
+        Invalid = 0,
+        TriggerUpdate = 1,
+        RGBUpdate = 2,
+        PlayerLED = 3,
+        TriggerThreshold = 4,
+        MicLED = 5,
+        PlayerLEDNewRevision = 6
+    },
+    PlayerLEDNewRevision = {
+        One = 0,
+        Two = 1,
+        Three = 2,
+        Four = 3,
+        Five = 4,
+        AllOff = 5
+    }
+}
+
+local UPDATE_INTERVAL = 1 / 60 -- Limit to 60Hz
 
 local udp = socket.udp()
-
 local address = "127.0.0.1"
 local port = 6969
 
@@ -15,22 +78,19 @@ local state = {
     isABSActive = false,
     airSpeedKmh = 0,
     beamDamage = 0,
+    lastBeamDamage = 0,
     wheelSlip = 0,
     engineLoad = 0,
     rpm = 0,
     maxRPM = 0,
-    absActivationTime = 0
+    absActivationTime = 0,
+    blinkStartTime = 0,
+    lastBlinkChange = 0,
+    isBlinking = false,
+    blinkState = false,
+    blinkCount = 0,
+    lastUpdateTime = 0
 }
-local lastBeamDamage = 0
-local blinkStartTime = 0
-local lastBlinkChange = 0
-local isBlinking = false
-local blinkState = false
-local blinkCount = 0
-
--- Add update rate limiting
-local lastUpdateTime = 0
-local UPDATE_INTERVAL = 1 / 30 -- Limit to 30Hz
 
 local function packetToJson(packet)
     return jsonEncode(packet)
@@ -42,7 +102,7 @@ local function send(data)
 end
 
 function lerp(a, b, t)
-    return a + (b - a) * 0.5 * t
+    return a + (b - a) * t
 end
 
 function inverseLerp(a, b, v)
@@ -73,11 +133,11 @@ local function handleLeftTrigger()
                               1, 0, 0, 0, 0, 0}
             }
         else
-            local startOfResistanceBrake = 1 * lerp(CONFIG.BRAKE_VALUE_MIN, CONFIG.BRAKE_VALUE_MAX, state.brake)
-            local startOfResistance = lerp(CONFIG.BRAKE_RESISTANCE_MIN, CONFIG.BRAKE_RESISTANCE_MAX,
-                startOfResistanceBrake)
-            local airSpeed = math.min(100, inverseLerp(0, CONFIG.BRAKE_AIRSPEED_MAX, state.airSpeedKmh))
-            local amountOfForceExcerted = math.min(255, lerp(CONFIG.BRAKE_FORCE_MIN, CONFIG.BRAKE_FORCE_MAX, airSpeed))
+            local brakeIntensity = lerp(CONFIG.BRAKE_VALUE_MIN, CONFIG.BRAKE_VALUE_MAX, state.brake)
+            local startOfResistance = lerp(CONFIG.BRAKE_RESISTANCE_MIN, CONFIG.BRAKE_RESISTANCE_MAX, brakeIntensity)
+            local airSpeedFactor = math.min(1.0, state.airSpeedKmh / CONFIG.BRAKE_AIRSPEED_MAX)
+            local amountOfForceExcerted = math.min(255,
+                lerp(CONFIG.BRAKE_FORCE_MIN, CONFIG.BRAKE_FORCE_MAX, airSpeedFactor))
 
             return {
                 type = Triggers.InstructionType.TriggerUpdate,
@@ -112,21 +172,21 @@ local function handleRightTrigger()
 end
 
 local function handleRGB()
-    if isBlinking and CONFIG.ENABLE_DAMAGE_LED then
+    if state.isBlinking and CONFIG.ENABLE_DAMAGE_LED then
         local currentTime = socket.gettime()
-        local timeSinceStart = currentTime - blinkStartTime
+        local timeSinceStart = currentTime - state.blinkStartTime
 
-        if currentTime - lastBlinkChange >= CONFIG.DAMAGE_BLINK_DURATION then
-            lastBlinkChange = currentTime
-            blinkState = not blinkState
-            if blinkState == false then
-                blinkCount = blinkCount + 1
+        if currentTime - state.lastBlinkChange >= CONFIG.DAMAGE_BLINK_DURATION then
+            state.lastBlinkChange = currentTime
+            state.blinkState = not state.blinkState
+            if state.blinkState == false then
+                state.blinkCount = state.blinkCount + 1
             end
         end
 
-        if blinkCount >= CONFIG.DAMAGE_BLINK_COUNT then
-            isBlinking = false
-            blinkCount = 0
+        if state.blinkCount >= CONFIG.DAMAGE_BLINK_COUNT then
+            state.isBlinking = false
+            state.blinkCount = 0
             return {
                 type = Triggers.InstructionType.RGBUpdate,
                 parameters = {0, 0, 0, 0, 0, 0}
@@ -135,9 +195,9 @@ local function handleRGB()
 
         return {
             type = Triggers.InstructionType.RGBUpdate,
-            parameters = {0, blinkState and CONFIG.DAMAGE_LED_COLOR.r or 0,
-                          blinkState and CONFIG.DAMAGE_LED_COLOR.g or 0, blinkState and CONFIG.DAMAGE_LED_COLOR.b or 0,
-                          0, 0}
+            parameters = {0, state.blinkState and CONFIG.DAMAGE_LED_COLOR.r or 0,
+                          state.blinkState and CONFIG.DAMAGE_LED_COLOR.g or 0,
+                          state.blinkState and CONFIG.DAMAGE_LED_COLOR.b or 0, 0, 0}
         }
     end
 
@@ -182,22 +242,22 @@ end
 
 local function handleVehicleData()
     local currentTime = socket.gettime()
-    if currentTime - lastUpdateTime < UPDATE_INTERVAL then
+    if currentTime - state.lastUpdateTime < UPDATE_INTERVAL then
         return
     end
-    lastUpdateTime = currentTime
+    state.lastUpdateTime = currentTime
 
     local instructions = {}
 
-    if not isBlinking and state.beamDamage > lastBeamDamage and (state.beamDamage - lastBeamDamage) >=
+    if not state.isBlinking and state.beamDamage > state.lastBeamDamage and (state.beamDamage - state.lastBeamDamage) >=
         CONFIG.DAMAGE_THRESHOLD then
-        isBlinking = true
-        blinkStartTime = socket.gettime()
-        lastBlinkChange = blinkStartTime
-        blinkState = true
-        blinkCount = 0
+        state.isBlinking = true
+        state.blinkStartTime = socket.gettime()
+        state.lastBlinkChange = state.blinkStartTime
+        state.blinkState = true
+        state.blinkCount = 0
     end
-    lastBeamDamage = state.beamDamage
+    state.lastBeamDamage = state.beamDamage
 
     table.insert(instructions, handleLeftTrigger())
     table.insert(instructions, handleRightTrigger())
@@ -209,16 +269,37 @@ local function handleVehicleData()
     })
 end
 
-local function dsxUpdate(throttle, brake, isABSActive, airSpeedKmh, beamDamage, wheelSlip, engineLoad, rpm, maxRPM)
+local function updateGFX(dt)
+    if not playerInfo.firstPlayerSeated then
+        return
+    end
+
+    local wheelSlip = 0
+    for i = 0, wheels.wheelRotatorCount - 1 do
+        local wd = wheels.wheelRotators[i]
+        wheelSlip = math.max(wheelSlip, wd.lastSlip)
+    end
+
+    local engineLoad = electrics.values.engineLoad or electrics.values.throttle or 0
+
+    local engines = powertrain.getDevicesByCategory("engine")
+    local maxRPM = 999999
+
+    if #engines > 0 then
+        maxRPM = engines[1]:getTorqueData().maxRPM
+    end
+
+    local rpm = electrics.values.rpm or 0
+
     if isABSActive and not state.isABSActive then
         state.absActivationTime = socket.gettime()
     end
 
-    state.throttle = throttle
-    state.brake = brake
-    state.isABSActive = isABSActive
-    state.airSpeedKmh = airSpeedKmh
-    state.beamDamage = beamDamage
+    state.throttle = input.state.throttle.val
+    state.brake = input.state.brake.val
+    state.isABSActive = electrics.values.absActive == 1
+    state.airSpeedKmh = electrics.values.airspeed * 3.6
+    state.beamDamage = beamstate.damage
     state.wheelSlip = wheelSlip
     state.engineLoad = engineLoad
     state.rpm = rpm
@@ -227,5 +308,7 @@ local function dsxUpdate(throttle, brake, isABSActive, airSpeedKmh, beamDamage, 
     handleVehicleData()
 end
 
-M.dsxUpdate = dsxUpdate
+local M = {}
+M.updateGFX = updateGFX
+
 return M

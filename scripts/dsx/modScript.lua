@@ -1,2 +1,0 @@
-load("dsx")
-registerCoreModule("dsx")

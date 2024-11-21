@@ -112,6 +112,16 @@ function inverseLerp(a, b, v)
     return 0
 end
 
+local function calculateCombinedForce(brake, speed)
+    local brakeNormalized = math.max(0, math.min(1, (brake - CONFIG.BRAKE_VALUE_MIN) /
+        (CONFIG.BRAKE_VALUE_MAX - CONFIG.BRAKE_VALUE_MIN)))
+    local speedNormalized = math.min(1.0, speed / CONFIG.BRAKE_AIRSPEED_MAX)
+
+    local combinedFactor = brakeNormalized * speedNormalized
+
+    return math.min(255, lerp(CONFIG.BRAKE_FORCE_MIN, CONFIG.BRAKE_FORCE_MAX, combinedFactor))
+end
+
 local function handleLeftTrigger()
     local absActive = state.isABSActive and (socket.gettime() - state.absActivationTime) > CONFIG.ABS_WAIT_TIME
 
@@ -133,17 +143,11 @@ local function handleLeftTrigger()
                               1, 0, 0, 0, 0, 0}
             }
         else
-            local brakeIntensity = lerp(CONFIG.BRAKE_VALUE_MIN, CONFIG.BRAKE_VALUE_MAX, state.brake)
-            local startOfResistance = lerp(CONFIG.BRAKE_RESISTANCE_MIN, CONFIG.BRAKE_RESISTANCE_MAX, brakeIntensity)
-            local airSpeedFactor = math.min(1.0, state.airSpeedKmh / CONFIG.BRAKE_AIRSPEED_MAX)
-            local amountOfForceExcerted = math.min(255,
-                lerp(CONFIG.BRAKE_FORCE_MIN, CONFIG.BRAKE_FORCE_MAX, airSpeedFactor))
-
             return {
                 type = Triggers.InstructionType.TriggerUpdate,
                 parameters = {CONFIG.CONTROLLER_INDEX, Triggers.Trigger.Left, Triggers.TriggerMode.CustomTriggerValue,
-                              Triggers.CustomTriggerValueMode.Rigid, startOfResistance, amountOfForceExcerted, 255, 0,
-                              0, 0, 0}
+                              Triggers.CustomTriggerValueMode.Rigid, CONFIG.BRAKE_VALUE_MIN * 255,
+                              calculateCombinedForce(state.brake, state.airSpeedKmh), 0, 0, 0, 0, 0}
             }
         end
     end
@@ -159,14 +163,10 @@ local function handleRightTrigger()
                           Triggers.CustomTriggerValueMode.VibratePulse, 255, 255, 3, 50, 0, 0, 0}
         }
     else
-        local startOfResistanceThrottle = 1 * lerp(CONFIG.THROTTLE_VALUE_MIN, CONFIG.THROTTLE_VALUE_MIN, state.throttle)
-        local startOfResistance = lerp(CONFIG.THROTTLE_RESISTANCE_MIN, CONFIG.THROTTLE_RESISTANCE_MAX,
-            startOfResistanceThrottle)
-
         return {
             type = Triggers.InstructionType.TriggerUpdate,
             parameters = {CONFIG.CONTROLLER_INDEX, Triggers.Trigger.Right, Triggers.TriggerMode.CustomTriggerValue,
-                          Triggers.CustomTriggerValueMode.Rigid, startOfResistance, 0, 0, 0, 0, 0, 0}
+                          Triggers.CustomTriggerValueMode.Rigid, CONFIG.THROTTLE_RESISTANCE_START, 0, 0, 0, 0, 0, 0}
         }
     end
 end
@@ -289,15 +289,16 @@ local function updateGFX(dt)
         maxRPM = engines[1]:getTorqueData().maxRPM
     end
 
+    local isAbsActive = electrics.values.absActive == 1
     local rpm = electrics.values.rpm or 0
 
-    if isABSActive and not state.isABSActive then
+    if isAbsActive and not state.isABSActive then
         state.absActivationTime = socket.gettime()
     end
 
     state.throttle = input.state.throttle.val
     state.brake = input.state.brake.val
-    state.isABSActive = electrics.values.absActive == 1
+    state.isABSActive = isAbsActive
     state.airSpeedKmh = electrics.values.airspeed * 3.6
     state.beamDamage = beamstate.damage
     state.wheelSlip = wheelSlip
